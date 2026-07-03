@@ -1,0 +1,11 @@
+{:itonami.blueprint/id "cloud-itonami-9601"
+ :itonami.blueprint/name "Washing and"
+ :itonami.blueprint/isic-rev5 "9601"
+ :itonami.blueprint/domain :services/laundry-drycleaning
+ :itonami.blueprint/license "AGPL-3.0-or-later"
+ :itonami.blueprint/social-impact [:community-access :data-sovereignty :transparency]
+ :itonami.blueprint/governor :garment-care-governor
+ :itonami.blueprint/required-technologies [:robotics :identity :forms :dmn :bpmn :audit-ledger]
+ :itonami.blueprint/optional-technologies []
+ :itonami.blueprint/status :public-oss
+ :itonami.blueprint/robotics true}
