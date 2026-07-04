@@ -1,4 +1,4 @@
-{:itonami.blueprint/id "cloud-itonami-9601"
+{:itonami.blueprint/id "cloud-itonami-isic-9601"
  :itonami.blueprint/name "Washing and"
  :itonami.blueprint/isic-rev5 "9601"
  :itonami.blueprint/domain :services/laundry-drycleaning

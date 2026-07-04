@@ -1,4 +1,4 @@
-# cloud-itonami-9601
+# cloud-itonami-isic-9601
 
 Open Business Blueprint for **ISIC Rev.5 9601**: Washing and.
 

@@ -2,7 +2,7 @@
 
 ## Classification
 
-- Repository: `cloud-itonami-9601`
+- Repository: `cloud-itonami-isic-9601`
 - ISIC Rev.5: `9601`
 - Activity: washing and (dry-)cleaning of textile and fur products -- laundry and dry-cleaning services for customers
 - Social impact: community access, data sovereignty, transparent audit

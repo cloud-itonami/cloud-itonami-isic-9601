@@ -1,6 +1,6 @@
 # Governance
 
-`cloud-itonami-9601` is an OSS open-business blueprint for washing and (dry-)cleaning of textile and fur products -- laundry and dry-cleaning services for customers.
+`cloud-itonami-isic-9601` is an OSS open-business blueprint for washing and (dry-)cleaning of textile and fur products -- laundry and dry-cleaning services for customers.
 Governance covers both the capability layer and the operator model.
 
 ## Maintainers
