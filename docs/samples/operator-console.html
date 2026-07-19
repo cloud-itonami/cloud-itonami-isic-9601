@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>laundry.render-html -- Garment Care Governor operator console</title>
+<style>
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ok { color: #137a3f; }
+body { font-family: system-ui,-apple-system,sans-serif; margin: 0; color: #1a1a1a; background: #fafafa; }
+header.bar { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #e5e5e5; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #f0f0f0; }
+h2 { margin-top: 0; font-size: 15px; }
+.warn { color: #b25c00; background: #fff8e1; padding: 2px 6px; border-radius: 4px; }
+main { max-width: 980px; margin: 24px auto; padding: 0 20px; }
+header.bar h1 { font-size: 18px; margin: 0; font-weight: 600; }
+.muted { color: #888; font-size: 13px; }
+.critical { color: #fff; background: #b3261e; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+.card { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.err { color: #b3261e; background: #fbe9e7; padding: 2px 6px; border-radius: 4px; }
+th { font-weight: 600; color: #555; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+header.bar .badge { margin-left: auto; font-size: 12px; color: #666; }
+code { font-size: 12px; background: #f4f4f4; padding: 1px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+<header class="bar"><h1>Garment Care Governor -- Operator Console</h1><span class="badge">ISIC 9601 &middot; phase 3 (supervised-auto)</span></header>
+<main>
+<div class="card">
+<h2>Garments</h2>
+<table>
+<thead><tr>
+<th>id</th><th>description</th><th>proposed process</th><th>care-label forbidden</th>
+<th>jurisdiction</th><th>cert not current?</th><th>cleaning applied?</th><th>returned?</th><th>status</th>
+</tr></thead>
+<tbody>
+<tr><td><code>garment-1</code></td><td>Wool Suit Jacket</td><td><code>:dry-clean</code></td><td><code>#{:tumble-dry :bleach}</code></td><td>JPN</td><td>no</td><td>yes</td><td>yes</td><td class="ok">committed</td></tr>
+<tr><td><code>garment-2</code></td><td>Atlantis Shirt</td><td><code>:dry-clean</code></td><td><code>#{:tumble-dry :bleach}</code></td><td>ATL</td><td>no</td><td>no</td><td>no</td><td class="err">governor-hold: no-spec-basis</td></tr>
+<tr><td><code>garment-3</code></td><td>鈴木花子のシルクブラウス</td><td><code>:bleach</code></td><td><code>#{:tumble-dry :bleach}</code></td><td>JPN</td><td>no</td><td>no</td><td>no</td><td class="err">governor-hold: cleaning-process-forbidden-by-care-label</td></tr>
+<tr><td><code>garment-4</code></td><td>田中一郎のコート</td><td><code>:dry-clean</code></td><td><code>#{:tumble-dry :bleach}</code></td><td>JPN</td><td><span class="critical">yes</span></td><td>no</td><td>no</td><td class="err">governor-hold: certification-not-current</td></tr>
+</tbody></table>
+</div>
+<div class="card">
+<h2>Committed records (cleaning-application / garment-return drafts)</h2>
+<table>
+<thead><tr>
+<th>record_id</th><th>kind</th><th>garment_id</th><th>jurisdiction</th>
+</tr></thead>
+<tbody>
+<tr><td><code>JPN-CLN-000000</code></td><td>cleaning-application-draft</td><td><code>garment-1</code></td><td>JPN</td></tr>
+<tr><td><code>JPN-RTN-000000</code></td><td>garment-return-draft</td><td><code>garment-1</code></td><td>JPN</td></tr>
+</tbody></table>
+</div>
+<div class="card">
+<h2>Action gate (laundry.phase &middot; laundry.governor/high-stakes)</h2>
+<table>
+<thead><tr>
+<th>op</th><th>phase-3 write allowed?</th><th>auto-eligible?</th><th>always escalates (high-stakes)?</th>
+</tr></thead>
+<tbody>
+<tr><td><code>:actuation/apply-cleaning-process</code></td><td>yes</td><td>no</td><td><span class="critical">yes</span></td></tr>
+<tr><td><code>:actuation/return-garment</code></td><td>yes</td><td>no</td><td><span class="critical">yes</span></td></tr>
+<tr><td><code>:careplan/verify</code></td><td>yes</td><td>no</td><td>no</td></tr>
+<tr><td><code>:certification/screen</code></td><td>yes</td><td>no</td><td>no</td></tr>
+<tr><td><code>:garment/intake</code></td><td>yes</td><td><span class="ok">yes</span></td><td>no</td></tr>
+</tbody></table>
+</div>
+<div class="card">
+<h2>Audit ledger</h2>
+<table>
+<thead><tr>
+<th>t</th><th>op</th><th>subject</th><th>disposition</th><th>basis / rule</th>
+</tr></thead>
+<tbody>
+<tr><td>:committed</td><td><code>:garment/intake</code></td><td><code>garment-1</code></td><td class="ok">:commit</td><td>id, garment-description</td></tr>
+<tr><td>:committed</td><td><code>:careplan/verify</code></td><td><code>garment-1</code></td><td class="ok">:commit</td><td>クリーニング業法 (Cleaning Business Act, Act No. 207 of 1950), https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/seikatsu-eisei/cleaning/index.html</td></tr>
+<tr><td>:committed</td><td><code>:actuation/apply-cleaning-process</code></td><td><code>garment-1</code></td><td class="ok">:commit</td><td>garment-1</td></tr>
+<tr><td>:committed</td><td><code>:actuation/return-garment</code></td><td><code>garment-1</code></td><td class="ok">:commit</td><td>garment-1</td></tr>
+<tr><td>:governor-hold</td><td><code>:careplan/verify</code></td><td><code>garment-2</code></td><td class="err">:hold</td><td>no-spec-basis</td></tr>
+<tr><td>:committed</td><td><code>:careplan/verify</code></td><td><code>garment-3</code></td><td class="ok">:commit</td><td>クリーニング業法 (Cleaning Business Act, Act No. 207 of 1950), https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/kenkou_iryou/seikatsu-eisei/cleaning/index.html</td></tr>
+<tr><td>:governor-hold</td><td><code>:actuation/apply-cleaning-process</code></td><td><code>garment-3</code></td><td class="err">:hold</td><td>cleaning-process-forbidden-by-care-label</td></tr>
+<tr><td>:governor-hold</td><td><code>:certification/screen</code></td><td><code>garment-4</code></td><td class="err">:hold</td><td>certification-not-current</td></tr>
+</tbody></table>
+</div>
+</main>
+</body></html>
