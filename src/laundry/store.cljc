@@ -32,10 +32,9 @@
   immutable log -- the audit trail a customer trusting a laundry/dry-
   cleaning operator needs, and the evidence an operator needs if an
   application or return decision is later disputed."
-  (:require #?(:clj  [clojure.edn :as edn]
-               :cljs [cljs.reader :as edn])
-            [laundry.registry :as registry]
-            [langchain.db :as d]))
+  (:require [laundry.registry :as registry]
+            [langchain.db :as d]
+            [langchain-store.core :as ls]))
 
 (defprotocol Store
   (garment [s id])
@@ -185,17 +184,14 @@
    :cleaning-sequence/jurisdiction   {:db/unique :db.unique/identity}
    :return-sequence/jurisdiction     {:db/unique :db.unique/identity}})
 
-(defn- enc [v] (pr-str v))
-(defn- dec* [s] (when s (edn/read-string s)))
-
 (defn- garment->tx [{:keys [id garment-description proposed-cleaning-process care-label-forbidden-processes
                             certification-not-current?
                             cleaning-applied? garment-returned?
                             jurisdiction status cleaning-number return-number]}]
   (cond-> {:garment/id id}
     garment-description                      (assoc :garment/garment-description garment-description)
-    proposed-cleaning-process                 (assoc :garment/proposed-cleaning-process (enc proposed-cleaning-process))
-    care-label-forbidden-processes             (assoc :garment/care-label-forbidden-processes (enc care-label-forbidden-processes))
+    proposed-cleaning-process                 (assoc :garment/proposed-cleaning-process (ls/enc proposed-cleaning-process))
+    care-label-forbidden-processes             (assoc :garment/care-label-forbidden-processes (ls/enc care-label-forbidden-processes))
     (some? certification-not-current?)          (assoc :garment/certification-not-current? certification-not-current?)
     (some? cleaning-applied?)                    (assoc :garment/cleaning-applied? cleaning-applied?)
     (some? garment-returned?)                     (assoc :garment/garment-returned? garment-returned?)
@@ -213,8 +209,8 @@
 (defn- pull->garment [m]
   (when (:garment/id m)
     {:id (:garment/id m) :garment-description (:garment/garment-description m)
-     :proposed-cleaning-process (dec* (:garment/proposed-cleaning-process m))
-     :care-label-forbidden-processes (or (dec* (:garment/care-label-forbidden-processes m)) #{})
+     :proposed-cleaning-process (ls/dec* (:garment/proposed-cleaning-process m))
+     :care-label-forbidden-processes (or (ls/dec* (:garment/care-label-forbidden-processes m)) #{})
      :certification-not-current? (boolean (:garment/certification-not-current? m))
      :cleaning-applied? (boolean (:garment/cleaning-applied? m))
      :garment-returned? (boolean (:garment/garment-returned? m))
@@ -230,25 +226,25 @@
          (map #(pull->garment (d/pull (d/db conn) garment-pull [:garment/id %])))
          (sort-by :id)))
   (certification-of [_ id]
-    (dec* (d/q '[:find ?p . :in $ ?gid
+    (ls/dec* (d/q '[:find ?p . :in $ ?gid
                 :where [?k :certification/garment-id ?gid] [?k :certification/payload ?p]]
               (d/db conn) id)))
   (careplan-of [_ garment-id]
-    (dec* (d/q '[:find ?p . :in $ ?gid
+    (ls/dec* (d/q '[:find ?p . :in $ ?gid
                 :where [?a :careplan/garment-id ?gid] [?a :careplan/payload ?p]]
               (d/db conn) garment-id)))
   (ledger [_]
     (->> (d/q '[:find ?s ?f :where [?e :ledger/seq ?s] [?e :ledger/fact ?f]] (d/db conn))
          (sort-by first)
-         (mapv (comp dec* second))))
+         (mapv (comp ls/dec* second))))
   (cleaning-history [_]
     (->> (d/q '[:find ?s ?r :where [?e :cleaning/seq ?s] [?e :cleaning/record ?r]] (d/db conn))
          (sort-by first)
-         (mapv (comp dec* second))))
+         (mapv (comp ls/dec* second))))
   (return-history [_]
     (->> (d/q '[:find ?s ?r :where [?e :return/seq ?s] [?e :return/record ?r]] (d/db conn))
          (sort-by first)
-         (mapv (comp dec* second))))
+         (mapv (comp ls/dec* second))))
   (next-cleaning-sequence [_ jurisdiction]
     (or (d/q '[:find ?n . :in $ ?j
               :where [?e :cleaning-sequence/jurisdiction ?j] [?e :cleaning-sequence/next ?n]]
@@ -269,10 +265,10 @@
       (d/transact! conn [(garment->tx value)])
 
       :careplan/set
-      (d/transact! conn [{:careplan/garment-id (first path) :careplan/payload (enc payload)}])
+      (d/transact! conn [{:careplan/garment-id (first path) :careplan/payload (ls/enc payload)}])
 
       :certification/set
-      (d/transact! conn [{:certification/garment-id (first path) :certification/payload (enc payload)}])
+      (d/transact! conn [{:certification/garment-id (first path) :certification/payload (ls/enc payload)}])
 
       :garment/mark-cleaned
       (let [garment-id (first path)
@@ -282,7 +278,7 @@
         (d/transact! conn
                      [(garment->tx (assoc garment-patch :id garment-id))
                       {:cleaning-sequence/jurisdiction jurisdiction :cleaning-sequence/next next-n}
-                      {:cleaning/seq (count (cleaning-history s)) :cleaning/record (enc (get result "record"))}])
+                      {:cleaning/seq (count (cleaning-history s)) :cleaning/record (ls/enc (get result "record"))}])
         result)
 
       :garment/mark-returned
@@ -293,12 +289,12 @@
         (d/transact! conn
                      [(garment->tx (assoc garment-patch :id garment-id))
                       {:return-sequence/jurisdiction jurisdiction :return-sequence/next next-n}
-                      {:return/seq (count (return-history s)) :return/record (enc (get result "record"))}])
+                      {:return/seq (count (return-history s)) :return/record (ls/enc (get result "record"))}])
         result)
       nil)
     s)
   (append-ledger! [s fact]
-    (d/transact! conn [{:ledger/seq (count (ledger s)) :ledger/fact (enc fact)}])
+    (d/transact! conn [{:ledger/seq (count (ledger s)) :ledger/fact (ls/enc fact)}])
     fact)
   (with-garments [s garments]
     (when (seq garments) (d/transact! conn (mapv garment->tx (vals garments)))) s))
