@@ -37,7 +37,7 @@
   is `laundry.operation`'s `:actuation/apply-cleaning-process`/
   `:actuation/return-garment`, always human-gated -- see README
   `Actuation`)."
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (defn- unsigned-certificate
   "Every certificate this actor produces is UNSIGNED -- signature is the
@@ -80,7 +80,7 @@
     (throw (ex-info "cleaning-application: jurisdiction required" {})))
   (when (< sequence 0)
     (throw (ex-info "cleaning-application: sequence must be >= 0" {})))
-  (let [cleaning-number (str (str/upper-case jurisdiction) "-CLN-" (zero-pad sequence 6))
+  (let [cleaning-number (str (str/upper jurisdiction) "-CLN-" (zero-pad sequence 6))
         record {"record_id" cleaning-number
                 "kind" "cleaning-application-draft"
                 "garment_id" garment-id
@@ -104,7 +104,7 @@
     (throw (ex-info "garment-return: jurisdiction required" {})))
   (when (< sequence 0)
     (throw (ex-info "garment-return: sequence must be >= 0" {})))
-  (let [return-number (str (str/upper-case jurisdiction) "-RTN-" (zero-pad sequence 6))
+  (let [return-number (str (str/upper jurisdiction) "-RTN-" (zero-pad sequence 6))
         record {"record_id" return-number
                 "kind" "garment-return-draft"
                 "garment_id" garment-id

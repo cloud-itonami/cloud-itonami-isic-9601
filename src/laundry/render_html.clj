@@ -4,7 +4,7 @@
   Drives the REAL actor stack (laundry.operation -> laundry.governor -> laundry.store).
   No invented numbers, no timestamps, byte-identical across reruns."
   (:require [jp-go-dds.skin]
-            [clojure.string :as str]
+            [kotoba.lang.text :as str]
             [laundry.store :as store]
             [laundry.operation :as op]
             [laundry.phase :as phase]
