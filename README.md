@@ -115,7 +115,7 @@ layers enforce this (`laundry.governor`'s `:actuation/apply-cleaning-
 process`/`:actuation/return-garment` high-stakes gate and `laundry.
 phase`'s phase table, which never puts `:actuation/apply-cleaning-
 process`/`:actuation/return-garment` in any phase's `:auto` set) --
-see `laundry.phase`'s docstring and `test/laundry/phase_test.clj`'s
+see `laundry.phase`'s docstring and `test/laundry/phase_test.kotoba`'s
 `apply-cleaning-process-never-auto-at-any-phase`/`return-garment-
 never-auto-at-any-phase`. The actor may draft, check and recommend; a
 human laundry/dry-cleaning staff member is always the one who
@@ -206,14 +206,14 @@ stack only -- no bespoke domain capability lib to reference at all.
 
 | File | Role |
 |---|---|
-| `src/laundry/store.cljc` | **Store** protocol -- `MemStore` ‖ `DatomicStore` (`langchain.db`) + append-only audit ledger + separate cleaning-application/garment-return history. No dynamically-filed sub-record -- both actuation ops act directly on a pre-seeded garment, and the double-actuation guards check dedicated `:cleaning-applied?`/`:garment-returned?` booleans rather than a `:status` value |
-| `src/laundry/registry.cljc` | Cleaning-application + garment-return draft records, plus `cleaning-process-forbidden-by-care-label?` -- a GENUINELY NEW concept (grep-verified absent from every prior sibling), the SIXTH instance of this fleet's set-membership/conflict check family (`clinic`/`veterinary`/`entertainment`/`nursing`/`alliedhealth` established the first five) |
-| `src/laundry/facts.cljc` | Per-jurisdiction garment-care/solvent-handling catalog with an official spec-basis citation per entry, honest coverage reporting |
-| `src/laundry/laundryadvisor.cljc` | **LaundryOps-LLM** -- `mock-advisor` ‖ `llm-advisor`; intake/careplan-verification/certification-screening/cleaning-application/garment-return proposals |
-| `src/laundry/governor.cljc` | **Garment Care Governor** -- 4 HARD checks (spec-basis · evidence-incomplete · cleaning-process-forbidden-by-care-label, ground-truth set-membership recompute · certification-not-current, unconditional evaluation, the 45th grounding of this discipline, a concept reuse renamed for this domain) + already-cleaned/already-returned guards + 1 soft (confidence/actuation gate) |
-| `src/laundry/phase.cljc` | **Phase 0→3** -- read-only → assisted intake → assisted verify → supervised (both cleaning-process application and garment return always human; garment intake is the ONLY auto-eligible op, no direct capital risk) |
-| `src/laundry/operation.cljc` | **OperationActor** -- langgraph-clj StateGraph |
-| `src/laundry/sim.cljc` | demo driver |
+| `src/laundry/store.kotoba` | **Store** protocol -- `MemStore` ‖ `DatomicStore` (`langchain.db`) + append-only audit ledger + separate cleaning-application/garment-return history. No dynamically-filed sub-record -- both actuation ops act directly on a pre-seeded garment, and the double-actuation guards check dedicated `:cleaning-applied?`/`:garment-returned?` booleans rather than a `:status` value |
+| `src/laundry/registry.kotoba` | Cleaning-application + garment-return draft records, plus `cleaning-process-forbidden-by-care-label?` -- a GENUINELY NEW concept (grep-verified absent from every prior sibling), the SIXTH instance of this fleet's set-membership/conflict check family (`clinic`/`veterinary`/`entertainment`/`nursing`/`alliedhealth` established the first five) |
+| `src/laundry/facts.kotoba` | Per-jurisdiction garment-care/solvent-handling catalog with an official spec-basis citation per entry, honest coverage reporting |
+| `src/laundry/laundryadvisor.kotoba` | **LaundryOps-LLM** -- `mock-advisor` ‖ `llm-advisor`; intake/careplan-verification/certification-screening/cleaning-application/garment-return proposals |
+| `src/laundry/governor.kotoba` | **Garment Care Governor** -- 4 HARD checks (spec-basis · evidence-incomplete · cleaning-process-forbidden-by-care-label, ground-truth set-membership recompute · certification-not-current, unconditional evaluation, the 45th grounding of this discipline, a concept reuse renamed for this domain) + already-cleaned/already-returned guards + 1 soft (confidence/actuation gate) |
+| `src/laundry/phase.kotoba` | **Phase 0→3** -- read-only → assisted intake → assisted verify → supervised (both cleaning-process application and garment return always human; garment intake is the ONLY auto-eligible op, no direct capital risk) |
+| `src/laundry/operation.kotoba` | **OperationActor** -- langgraph-clj StateGraph |
+| `src/laundry/sim.kotoba` | demo driver |
 | `test/laundry/*_test.clj` | governor contract · phase invariants · store parity · registry conformance · facts coverage |
 
 ## Business-process coverage (honest)
