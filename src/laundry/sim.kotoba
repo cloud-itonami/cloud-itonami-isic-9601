@@ -1,5 +1,5 @@
 (ns laundry.sim
-  "Demo driver -- `clojure -M:dev:run`. Walks a clean garment through
+  "Demo driver -- `kbb -M:dev:run`. Walks a clean garment through
   intake -> care-plan verification -> solvent-handling-certification
   screening -> cleaning-process-application proposal (always
   escalates) -> human approval -> commit, then through garment-return
