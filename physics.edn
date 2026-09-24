@@ -1,0 +1,33 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:dev:physics` runs it.
+;;
+;; README "Robotics premise": a garment-handling robot assists physical
+;; sorting, cleaning-machine loading and pressing in a laundry / dry-cleaner
+;; (ISIC 9601), gated by the Garment Care Governor. Its physical work here is
+;; lifting a wet load out of the washer-extractor into the dryer, and pressing
+;; a wool garment seam with the heated press head.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+;; Replacing an estimate with a sourced value is this bot's growth work.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isic-9601"
+ :cases
+ [{:id :wet-load-into-dryer
+   :kind :manipulator
+   :procedure "arm lifts the wet load from the washer-extractor unload cart up into the tumble-dryer door"
+   :params {:l1-m 0.60 :l2-m 0.55 :m1-kg 8.0 :m2-kg 6.0
+            :from [0.55 0.10] :to [0.65 0.80] :duration-s 3.0 :steps 500}
+   :sweep {:param :payload-kg :values [4.0 8.0 12.0 16.0 20.0 25.0]}
+   :quantity :peak-tau1-nm
+   :limit {:max 250.0 :basis "estimate: continuous shoulder torque of a 20 kg-payload-class industrial arm; a wet load weighs roughly twice its dry weight after extraction"}
+   :boundary {:lo 1.0 :hi 60.0}}
+  {:id :wool-seam-pressing
+   :kind :thermal
+   :procedure "press head closes on a wool garment seam; heat goes through the 1.5 mm stack of two wool plies towards the padded buck until the seam line underneath is steam-set"
+   :params {:thickness-m 0.0015 :conductivity-w-mk 0.06 :density-kg-m3 350.0 :specific-heat-j-kgk 1300.0
+            :t0-c 22.0 :h-front-w-m2k 500.0 :t-back-ambient-c 30.0 :h-back-w-m2k 5.0
+            :threshold-c 100.0 :duration-s 120.0 :nodes 11}
+   :sweep {:param :t-hot-c :values [110.0 130.0 150.0 170.0 190.0]}
+   :quantity :time-to-threshold-s
+   :limit {:max 20.0 :basis "estimate: underside of the seam reaches 100 C within a 20 s press cycle; heat is taken as conducted only (steam penetration is not modelled); wool-stack properties and head contact conductance are estimates"}
+   :boundary {:lo 105.0 :hi 300.0}}]}
